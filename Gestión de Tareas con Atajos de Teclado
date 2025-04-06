@@ -1,0 +1,76 @@
+import tkinter as tk
+from tkinter import messagebox
+
+class ToDoApp:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("Lista de Tareas")
+        self.root.geometry("400x400")
+
+        self.entry = tk.Entry(root, font=('Arial', 14))
+        self.entry.pack(pady=10)
+        self.entry.focus()
+
+        self.frame_buttons = tk.Frame(root)
+        self.frame_buttons.pack()
+
+        self.btn_add = tk.Button(self.frame_buttons, text="Añadir", command=self.add_task)
+        self.btn_add.grid(row=0, column=0, padx=5)
+
+        self.btn_complete = tk.Button(self.frame_buttons, text="Completar", command=self.complete_task)
+        self.btn_complete.grid(row=0, column=1, padx=5)
+
+        self.btn_delete = tk.Button(self.frame_buttons, text="Eliminar", command=self.delete_task)
+        self.btn_delete.grid(row=0, column=2, padx=5)
+
+        self.listbox = tk.Listbox(root, font=('Arial', 14), selectmode=tk.SINGLE)
+        self.listbox.pack(expand=True, fill='both', padx=10, pady=10)
+
+        self.task_status = {}
+
+        root.bind('<Return>', lambda event: self.add_task())
+        root.bind('<c>', lambda event: self.complete_task())
+        root.bind('<C>', lambda event: self.complete_task())
+        root.bind('<d>', lambda event: self.delete_task())
+        root.bind('<D>', lambda event: self.delete_task())
+        root.bind('<Delete>', lambda event: self.delete_task())
+        root.bind('<Escape>', lambda event: root.quit())
+
+    def add_task(self):
+        task = self.entry.get().strip()
+        if task:
+            self.listbox.insert(tk.END, task)
+            self.task_status[task] = False
+            self.entry.delete(0, tk.END)
+        else:
+            messagebox.showwarning("Advertencia", "La tarea no puede estar vacía.")
+
+    def complete_task(self):
+        try:
+            index = self.listbox.curselection()[0]
+            task = self.listbox.get(index)
+            if not self.task_status.get(task, False):
+                self.listbox.delete(index)
+                new_task = f"[✔] {task}"
+                self.listbox.insert(index, new_task)
+                self.task_status[new_task] = True
+                del self.task_status[task]
+            else:
+                messagebox.showinfo("Info", "La tarea ya está completada.")
+        except IndexError:
+            messagebox.showwarning("Advertencia", "Seleccione una tarea para marcar como completada.")
+
+    def delete_task(self):
+        try:
+            index = self.listbox.curselection()[0]
+            task = self.listbox.get(index)
+            self.listbox.delete(index)
+            if task in self.task_status:
+                del self.task_status[task]
+        except IndexError:
+            messagebox.showwarning("Advertencia", "Seleccione una tarea para eliminar.")
+
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = ToDoApp(root)
+    root.mainloop()
